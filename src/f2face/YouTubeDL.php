@@ -5,7 +5,10 @@ class YouTubeDL {
 
     private $ytdl_file = 'youtube-dl';
 
-    function __construct() {
+    function __construct($youtubedl_file = null) {
+        if (!empty($youtubedl_file))
+            $this->ytdl_file = $youtubedl_file;
+        
         if (!$this->checkYtdl())
             throw new \Exception('YouTube-DL not found');
     }
@@ -49,7 +52,7 @@ class YouTubeDL {
      *  @return string|null $data
      */
     private function runYtdl($args) {
-        $data = shell_exec(sprintf("%s %s", $this->ytdl_file, $args));
+        $data = shell_exec(sprintf('"%s" %s', $this->ytdl_file, $args));
         return $data;
     }
 
@@ -74,7 +77,7 @@ class YouTubeDL {
     private function command_exists($command) {
         $whereIsCommand = (PHP_OS == 'WINNT') ? 'where' : 'which';
         
-        $process = proc_open("$whereIsCommand $command", array(
+        $process = proc_open(sprintf('%s "%s"', $whereIsCommand, $command), array(
                 0 => array("pipe", "r"), //STDIN
                 1 => array("pipe", "w"), //STDOUT
                 2 => array("pipe", "w"), //STDERR
@@ -88,7 +91,7 @@ class YouTubeDL {
             fclose($pipes[1]);
             fclose($pipes[2]);
             proc_close($process);
-            return $stdout != '';
+            return ($stdout != '' || file_exists($this->ytdl_file));
         }
 
         return false;
