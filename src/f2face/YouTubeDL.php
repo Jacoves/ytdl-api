@@ -20,6 +20,9 @@ class YouTubeDL {
      *  @return object
      */
     public function run($url) {
+        if (!$this->isValidUrl($url))
+            throw new \Exception('URL is invalid');
+        
         $result = $this->runYtdl(sprintf('--skip-download --print-json "%s"', $url));
         $obj = json_decode($result);
         
@@ -95,5 +98,18 @@ class YouTubeDL {
         }
 
         return false;
+    }
+
+    /**
+     *  Validate the URL.
+     *
+     *  @param string $url
+     *  @return boolean
+     */
+    private function isValidUrl($url) {
+        if (!preg_match('#^https?://#', $url))
+            $url = 'http://' . $url;
+        
+        return (!filter_var($url, FILTER_VALIDATE_URL) === false);
     }
 }
